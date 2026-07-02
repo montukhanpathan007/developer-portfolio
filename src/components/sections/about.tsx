@@ -5,9 +5,10 @@ import { Reveal } from "@/components/motion/reveal";
 
 export function About() {
   return (
-    <section id="about" className="scroll-mt-20 border-t border-line">
+    <section id="about" aria-labelledby="about-heading" className="scroll-mt-20 border-t border-line">
       <div className="mx-auto w-full max-w-6xl px-5 py-20 sm:px-8 md:py-28">
         <SectionHeading
+          headingId="about-heading"
           route="GET /about"
           title="Backend engineering, done properly"
           blurb="The professional story so far — and what I actually work on day to day."

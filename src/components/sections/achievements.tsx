@@ -4,7 +4,11 @@ import { Reveal } from "@/components/motion/reveal";
 
 export function Achievements() {
   return (
-    <section id="achievements" className="scroll-mt-20 border-t border-line bg-surface/60">
+    <section
+      id="achievements"
+      aria-label="Career statistics"
+      className="scroll-mt-20 border-t border-line bg-surface/60"
+    >
       <div className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-8 md:py-20">
         <dl className="grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
           {stats.map((stat, i) => (

@@ -24,12 +24,13 @@ const groupIcons: Record<string, LucideIcon> = {
 
 export function Skills() {
   return (
-    <section id="skills" className="scroll-mt-20 border-t border-line">
+    <section id="skills" aria-labelledby="skills-heading" className="scroll-mt-20 border-t border-line">
       <div className="mx-auto w-full max-w-6xl px-5 py-20 sm:px-8 md:py-28">
         <SectionHeading
+          headingId="skills-heading"
           route="GET /skills"
           title="Technical skills"
-          blurb="The stack I work with in production — Magento 2 expertise runs deepest."
+          blurb="The stack I work with in production — Magento 2 expertise runs deepest, and the highlighted skills are my daily drivers."
         />
 
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -44,30 +45,32 @@ export function Skills() {
               >
                 <div
                   className={cn(
-                    "h-full rounded-xl border p-6 transition-colors",
+                    "group h-full rounded-xl border p-6 transition-all duration-300",
                     isMagento
-                      ? "border-accent/30 bg-accent-soft"
-                      : "border-line bg-surface hover:border-line-strong"
+                      ? "border-accent/30 bg-accent-soft hover:border-accent/50"
+                      : "border-line bg-surface hover:border-line-strong hover:shadow-sm"
                   )}
                 >
                   <div className="mb-4 flex items-center gap-3">
                     <span
                       className={cn(
-                        "flex size-9 items-center justify-center rounded-lg",
-                        isMagento ? "bg-accent text-accent-foreground" : "bg-surface-raised text-accent"
+                        "flex size-9 items-center justify-center rounded-lg transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-110",
+                        isMagento
+                          ? "bg-accent text-accent-foreground"
+                          : "bg-surface-raised text-accent"
                       )}
                     >
-                      <Icon className="size-4.5" />
+                      <Icon className="size-4.5" aria-hidden />
                     </span>
                     <h3 className="font-medium text-foreground">{group.label}</h3>
                   </div>
-                  <div className="flex flex-wrap gap-2">
+                  <ul className="flex flex-wrap gap-2">
                     {group.items.map((item) => (
-                      <Chip key={item} accent={isMagento}>
-                        {item}
-                      </Chip>
+                      <li key={item}>
+                        <Chip accent={isMagento}>{item}</Chip>
+                      </li>
                     ))}
-                  </div>
+                  </ul>
                 </div>
               </Reveal>
             );

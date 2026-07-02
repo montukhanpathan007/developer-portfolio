@@ -10,9 +10,14 @@ const slots = [
 
 export function Testimonials() {
   return (
-    <section id="testimonials" className="scroll-mt-20 border-t border-line">
+    <section
+      id="testimonials"
+      aria-labelledby="testimonials-heading"
+      className="scroll-mt-20 border-t border-line"
+    >
       <div className="mx-auto w-full max-w-6xl px-5 py-20 sm:px-8 md:py-28">
         <SectionHeading
+          headingId="testimonials-heading"
           route="GET /testimonials"
           title="What people say"
           blurb="Testimonials from colleagues and clients will land here — no invented quotes in the meantime."

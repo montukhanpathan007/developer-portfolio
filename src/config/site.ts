@@ -49,6 +49,8 @@ export const hero = {
   eyebrow: "Backend Developer — Ahmedabad, IN",
   intro:
     "2.5+ years building and maintaining scalable e-commerce and SaaS backends. I design custom Magento 2 B2B modules, GraphQL & REST APIs, ERP integrations, and Laravel services that serve thousands of monthly users.",
+  // Quick factual proof points shown under the intro.
+  proof: ["10+ production modules", "GraphQL & REST APIs", "ERP integrations"],
   // Content of the signature GraphQL panel. Facts only.
   graphql: {
     endpoint: "POST /graphql",
@@ -94,6 +96,9 @@ export type SkillGroup = {
   label: string;
   items: string[];
 };
+
+/** Headline skills — rendered with accent styling wherever they appear. */
+export const coreSkills = new Set(["PHP", "Magento 2", "Laravel", "GraphQL", "MySQL"]);
 
 export const skillGroups: SkillGroup[] = [
   {
@@ -153,7 +158,14 @@ export const skillGroups: SkillGroup[] = [
 
 export type ProjectLink = {
   label: "Live Demo" | "GitHub" | "Case Study";
-  href: string | null; // null → render an honest "coming soon" placeholder
+  href: string | null; // null → render an honest "private / on request" placeholder
+};
+
+export type ProjectMetric = {
+  value: string;
+  label: string;
+  /** Directional metrics (no hard number on the resume) render with a trend icon. */
+  trend?: "up" | "down";
 };
 
 export type Project = {
@@ -163,7 +175,7 @@ export type Project = {
   description: string;
   tech: string[];
   links: ProjectLink[];
-  metrics?: { value: string; label: string }[];
+  metrics?: ProjectMetric[];
 };
 
 export const projects: Project[] = [
@@ -180,10 +192,10 @@ export const projects: Project[] = [
       { label: "Case Study", href: null },
     ],
     metrics: [
-      { value: "10+", label: "Custom modules" },
+      { value: "10+", label: "Custom modules shipped" },
       { value: "1000s", label: "Monthly users served" },
-      { value: "↓", label: "Manual operations reduced" },
-      { value: "↑", label: "Backend performance optimized" },
+      { value: "Reduced", label: "Manual operations", trend: "down" },
+      { value: "Faster", label: "Key page responses", trend: "up" },
     ],
   },
   {
@@ -215,7 +227,10 @@ export type Experience = {
   role: string;
   period: string;
   location: string;
+  current?: boolean;
   summary?: string;
+  /** Standout achievements — rendered with more visual weight than bullets. */
+  highlights: string[];
   bullets: string[];
   tags: string[];
 };
@@ -226,12 +241,15 @@ export const experience: Experience[] = [
     role: "Backend Developer (PHP / Magento / Laravel)",
     period: "Jun 2023 — Present",
     location: "Ahmedabad, India",
+    current: true,
     summary:
       "Building scalable backend modules for e-commerce and SaaS products serving thousands of monthly users.",
-    bullets: [
+    highlights: [
       "Built 10+ custom Magento 2 modules and admin extensions across catalog, checkout, customer account, and order workflows — reducing manual operations for the client team.",
-      "Implemented company management, GT/MT customer-group pricing, multi-MRP pricing, custom inventory reservation, order merging, and ERP (Vinculum) integration.",
+      "Implemented a full B2B feature suite: company management, GT/MT customer-group pricing, multi-MRP pricing, custom inventory reservation, order merging, and ERP (Vinculum) integration.",
       "Developed GraphQL APIs and improved response times on key pages through query optimization and caching.",
+    ],
+    bullets: [
       "Implemented Laravel REST APIs, Eloquent relationships, queues, and scheduled jobs for bulk imports, notifications, and report generation.",
       "Followed feature → develop → main Git branching with peer code reviews and CI checks; debugged production incidents via Magento logs, Laravel Telescope, and MySQL slow query logs.",
       "Collaborated in Agile sprints with frontend developers, QA, and project managers.",
@@ -243,8 +261,11 @@ export const experience: Experience[] = [
     role: "Java Developer Intern",
     period: "Apr 2023 — Jun 2023",
     location: "Ahmedabad, India",
+    highlights: [
+      "Contributed to a networking-domain product integrating with a TACACS authentication server.",
+    ],
     bullets: [
-      "Trained in Spring Boot, microservices, Docker, and Git; contributed to a networking-domain product integrating with a TACACS authentication server.",
+      "Trained in Spring Boot, microservices, Docker, and Git.",
       "Implemented REST endpoints and bug fixes under senior guidance, following code review and version control discipline.",
     ],
     tags: ["Spring Boot", "Docker", "REST APIs", "Git", "TACACS"],

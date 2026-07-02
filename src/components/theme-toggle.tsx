@@ -10,7 +10,10 @@ export function ThemeToggle() {
   const mounted = useMounted();
 
   if (!mounted) {
-    return <Button variant="ghost" size="icon" aria-hidden className="opacity-0" />;
+    // Layout placeholder before hydration — must not be focusable or announced.
+    return (
+      <Button variant="ghost" size="icon" aria-hidden tabIndex={-1} disabled className="opacity-0" />
+    );
   }
 
   const isDark = resolvedTheme === "dark";

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import emailjs from "@emailjs/browser";
+import { m, useReducedMotion } from "framer-motion";
 import {
   CheckCircle2,
   Loader2,
@@ -17,6 +18,7 @@ import { SectionHeading } from "@/components/ui/section-heading";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Textarea } from "@/components/ui/field";
 import { Reveal } from "@/components/motion/reveal";
+import { cn } from "@/lib/utils";
 
 const emailjsConfig = {
   serviceId: process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID,
@@ -29,9 +31,38 @@ const emailjsReady = Boolean(
 );
 
 type Status = "idle" | "sending" | "sent" | "error";
+type FieldName = "name" | "email" | "subject" | "message";
+type FieldErrors = Partial<Record<FieldName, string>>;
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function validate(payload: Record<FieldName, string>): FieldErrors {
+  const errors: FieldErrors = {};
+  if (payload.name.trim().length < 2) errors.name = "Please enter your name.";
+  if (!EMAIL_RE.test(payload.email)) errors.email = "That email address doesn't look right.";
+  if (payload.subject.trim().length < 3) errors.subject = "A short subject helps me reply faster.";
+  if (payload.message.trim().length < 10)
+    errors.message = "Tell me a little more — at least a sentence.";
+  return errors;
+}
+
+function FieldError({ id, children }: { id: string; children?: string }) {
+  if (!children) return null;
+  return (
+    <p id={id} role="alert" className="mt-1.5 flex items-center gap-1.5 text-xs text-red-500">
+      <TriangleAlert className="size-3" aria-hidden />
+      {children}
+    </p>
+  );
+}
 
 export function Contact() {
   const [status, setStatus] = useState<Status>("idle");
+  const [errors, setErrors] = useState<FieldErrors>({});
+  const reduce = useReducedMotion();
+
+  const clearError = (field: FieldName) =>
+    setErrors((prev) => (prev[field] ? { ...prev, [field]: undefined } : prev));
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -47,6 +78,16 @@ export function Contact() {
       subject: String(data.get("subject") ?? ""),
       message: String(data.get("message") ?? ""),
     };
+
+    const fieldErrors = validate(payload);
+    setErrors(fieldErrors);
+    if (Object.values(fieldErrors).some(Boolean)) {
+      const first = (["name", "email", "subject", "message"] as const).find(
+        (f) => fieldErrors[f]
+      );
+      if (first) (form.elements.namedItem(first) as HTMLElement | null)?.focus();
+      return;
+    }
 
     if (!emailjsReady) {
       // EmailJS not configured yet — fall back to the visitor's mail client.
@@ -70,9 +111,14 @@ export function Contact() {
   }
 
   return (
-    <section id="contact" className="scroll-mt-20 border-t border-line">
+    <section
+      id="contact"
+      aria-labelledby="contact-heading"
+      className="scroll-mt-20 border-t border-line"
+    >
       <div className="mx-auto w-full max-w-6xl px-5 py-20 sm:px-8 md:py-28">
         <SectionHeading
+          headingId="contact-heading"
           route="POST /contact"
           title="Let's talk backend"
           blurb="Hiring for a Magento 2, Laravel, or PHP role — or want a second pair of eyes on a B2B commerce problem? My inbox is open."
@@ -85,16 +131,16 @@ export function Contact() {
                 href={`mailto:${siteConfig.email}`}
                 className="flex items-center gap-3 text-muted transition-colors hover:text-accent"
               >
-                <Mail className="size-4 text-accent" /> {siteConfig.email}
+                <Mail className="size-4 text-accent" aria-hidden /> {siteConfig.email}
               </a>
               <a
                 href={`tel:${siteConfig.phone.replace(/\s/g, "")}`}
                 className="flex items-center gap-3 text-muted transition-colors hover:text-accent"
               >
-                <Phone className="size-4 text-accent" /> {siteConfig.phone}
+                <Phone className="size-4 text-accent" aria-hidden /> {siteConfig.phone}
               </a>
               <p className="flex items-center gap-3 text-muted">
-                <MapPin className="size-4 text-accent" /> {siteConfig.location}
+                <MapPin className="size-4 text-accent" aria-hidden /> {siteConfig.location}
               </p>
             </div>
 
@@ -121,71 +167,140 @@ export function Contact() {
           </Reveal>
 
           <Reveal delay={0.1}>
-            <form onSubmit={handleSubmit} className="rounded-xl border border-line bg-surface p-6 sm:p-8">
-              <div className="grid gap-5 sm:grid-cols-2">
-                <div>
-                  <Label htmlFor="name">name</Label>
-                  <Input id="name" name="name" required autoComplete="name" placeholder="Your name" />
-                </div>
-                <div>
-                  <Label htmlFor="email">email</Label>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    required
-                    autoComplete="email"
-                    placeholder="you@company.com"
-                  />
-                </div>
-              </div>
-              <div className="mt-5">
-                <Label htmlFor="subject">subject</Label>
-                <Input id="subject" name="subject" required placeholder="Backend role / project inquiry" />
-              </div>
-              <div className="mt-5">
-                <Label htmlFor="message">message</Label>
-                <Textarea id="message" name="message" required placeholder="What are you building?" />
-              </div>
-
-              <input
-                type="text"
-                name="company"
-                tabIndex={-1}
-                autoComplete="off"
-                aria-hidden="true"
-                className="hidden"
-              />
-
-              <div className="mt-6 flex flex-wrap items-center gap-4">
-                <Button type="submit" disabled={status === "sending"} size="lg">
-                  {status === "sending" ? (
-                    <>
-                      <Loader2 className="animate-spin" /> Sending…
-                    </>
-                  ) : (
-                    <>
-                      <Send /> Send message
-                    </>
-                  )}
+            {status === "sent" ? (
+              <m.div
+                initial={reduce ? false : { opacity: 0, scale: 0.97 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.35, ease: [0.21, 0.47, 0.32, 0.98] }}
+                className="flex h-full min-h-72 flex-col items-center justify-center rounded-xl border border-accent/30 bg-accent-soft p-8 text-center"
+                role="status"
+              >
+                <span className="flex size-14 items-center justify-center rounded-full bg-accent text-accent-foreground">
+                  <CheckCircle2 className="size-7" aria-hidden />
+                </span>
+                <h3 className="mt-5 font-display text-xl font-semibold text-foreground">
+                  Message sent — 201 Created
+                </h3>
+                <p className="mt-2 max-w-sm text-sm text-muted">
+                  Thanks for reaching out. I usually reply within 24 hours; check{" "}
+                  <span className="font-mono text-xs">{siteConfig.email}</span> for my response.
+                </p>
+                <Button variant="outline" size="sm" className="mt-6" onClick={() => setStatus("idle")}>
+                  Send another message
                 </Button>
-                {status === "sent" && (
-                  <p className="flex items-center gap-2 text-sm text-accent" role="status">
-                    <CheckCircle2 className="size-4" /> Message sent — I&apos;ll reply soon.
-                  </p>
-                )}
-                {status === "error" && (
-                  <p className="flex items-center gap-2 text-sm text-red-500" role="status">
-                    <TriangleAlert className="size-4" /> Something broke — email me directly instead.
-                  </p>
-                )}
-                {!emailjsReady && (
-                  <p className="font-mono text-[11px] text-faint">
-                    fallback: opens your mail client
-                  </p>
-                )}
-              </div>
-            </form>
+              </m.div>
+            ) : (
+              <form
+                onSubmit={handleSubmit}
+                noValidate
+                className="rounded-xl border border-line bg-surface p-6 sm:p-8"
+              >
+                <fieldset disabled={status === "sending"} className="group/form">
+                  <div className="grid gap-5 sm:grid-cols-2">
+                    <div>
+                      <Label htmlFor="name">name</Label>
+                      <Input
+                        id="name"
+                        name="name"
+                        required
+                        autoComplete="name"
+                        placeholder="Your name"
+                        aria-invalid={Boolean(errors.name)}
+                        aria-describedby={errors.name ? "name-error" : undefined}
+                        onChange={() => clearError("name")}
+                        className={cn(errors.name && "border-red-500/60")}
+                      />
+                      <FieldError id="name-error">{errors.name}</FieldError>
+                    </div>
+                    <div>
+                      <Label htmlFor="email">email</Label>
+                      <Input
+                        id="email"
+                        name="email"
+                        type="email"
+                        required
+                        autoComplete="email"
+                        placeholder="you@company.com"
+                        aria-invalid={Boolean(errors.email)}
+                        aria-describedby={errors.email ? "email-error" : undefined}
+                        onChange={() => clearError("email")}
+                        className={cn(errors.email && "border-red-500/60")}
+                      />
+                      <FieldError id="email-error">{errors.email}</FieldError>
+                    </div>
+                  </div>
+                  <div className="mt-5">
+                    <Label htmlFor="subject">subject</Label>
+                    <Input
+                      id="subject"
+                      name="subject"
+                      required
+                      placeholder="Backend role / project inquiry"
+                      aria-invalid={Boolean(errors.subject)}
+                      aria-describedby={errors.subject ? "subject-error" : undefined}
+                      onChange={() => clearError("subject")}
+                      className={cn(errors.subject && "border-red-500/60")}
+                    />
+                    <FieldError id="subject-error">{errors.subject}</FieldError>
+                  </div>
+                  <div className="mt-5">
+                    <Label htmlFor="message">message</Label>
+                    <Textarea
+                      id="message"
+                      name="message"
+                      required
+                      placeholder="What are you building?"
+                      aria-invalid={Boolean(errors.message)}
+                      aria-describedby={errors.message ? "message-error" : undefined}
+                      onChange={() => clearError("message")}
+                      className={cn(errors.message && "border-red-500/60")}
+                    />
+                    <FieldError id="message-error">{errors.message}</FieldError>
+                  </div>
+
+                  <input
+                    type="text"
+                    name="company"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    aria-hidden="true"
+                    className="hidden"
+                  />
+
+                  <div className="mt-6 flex flex-wrap items-center gap-4">
+                    <Button
+                      type="submit"
+                      size="lg"
+                      className="min-w-44 group-disabled/form:opacity-70"
+                    >
+                      {status === "sending" ? (
+                        <>
+                          <Loader2 className="animate-spin" aria-hidden /> Sending…
+                        </>
+                      ) : (
+                        <>
+                          <Send aria-hidden /> Send message
+                        </>
+                      )}
+                    </Button>
+                    {status === "error" && (
+                      <p className="flex items-center gap-2 text-sm text-red-500" role="alert">
+                        <TriangleAlert className="size-4" aria-hidden />
+                        Sending failed — email me directly at{" "}
+                        <a href={`mailto:${siteConfig.email}`} className="underline">
+                          {siteConfig.email}
+                        </a>
+                      </p>
+                    )}
+                    {!emailjsReady && status === "idle" && (
+                      <p className="font-mono text-[11px] text-faint">
+                        fallback: opens your mail client
+                      </p>
+                    )}
+                  </div>
+                </fieldset>
+              </form>
+            )}
           </Reveal>
         </div>
       </div>

@@ -6,9 +6,10 @@ import { Reveal } from "@/components/motion/reveal";
 
 export function Blog() {
   return (
-    <section id="blog" className="scroll-mt-20 border-t border-line">
+    <section id="blog" aria-labelledby="blog-heading" className="scroll-mt-20 border-t border-line">
       <div className="mx-auto w-full max-w-6xl px-5 py-20 sm:px-8 md:py-28">
         <SectionHeading
+          headingId="blog-heading"
           route="GET /blog"
           title="Writing"
           blurb="Technical notes from the trenches — drafts in progress, publishing soon."
