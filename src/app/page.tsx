@@ -6,7 +6,6 @@ import { Projects } from "@/components/sections/projects";
 import { Experience } from "@/components/sections/experience";
 import { Achievements } from "@/components/sections/achievements";
 import { Blog } from "@/components/sections/blog";
-import { Testimonials } from "@/components/sections/testimonials";
 import { Contact } from "@/components/sections/contact";
 import { Footer } from "@/components/sections/footer";
 
@@ -22,7 +21,6 @@ export default function Home() {
         <Experience />
         <Achievements />
         <Blog />
-        <Testimonials />
         <Contact />
       </main>
       <Footer />
